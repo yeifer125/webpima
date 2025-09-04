@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: proyecto-pima
+    env: docker
+    plan: free
+    autoDeploy: true
+    buildCommand: ""        # Render usará el Dockerfile directamente
+    startCommand: ""        # Render usará el CMD del Dockerfile
+    healthCheckPath: /      # Render comprobará la raíz "/"
+    envVars:
+      - key: API_PIMA_URL
+        value: "https://apiparagit.onrender.com/precios"
+      - key: PYTHONUNBUFFERED
+        value: "1"

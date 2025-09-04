@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precios CENADA - by cArbonAto</title>
+<link rel="icon" href="https://i.postimg.cc/KcNyWSR4/orinoco.jpg" type="image/png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+    color: #333;
+    padding: 20px;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Modo oscuro */
+  body.dark-mode { background: #1f1f1f; color: #f0f0f0; }
+  body.dark-mode h1 { color: #7ab8f5; }
+
+  /* Navbar */
+  nav {
+    background: #1f3c88;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    margin: 5px 12px;
+    font-weight: bold;
+  }
+  nav a:hover { text-decoration: underline; }
+  nav button {
+    background: #fff;
+    color: #1f3c88;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  nav button:hover { background: #eaeaea; }
+
+  h1 {
+    text-align: center;
+    color: #1f3c88;
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+
+  /* Inputs */
+  #busqueda {
+    width: 90%;
+    max-width: 400px;
+    padding: 12px 15px;
+    margin: 10px auto;
+    display: block;
+    border: 2px solid #1f3c88;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+  #busqueda:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 12px rgba(76,175,80,0.5);
+  }
+  #actualizarBtn {
+    display: block;
+    margin: 10px auto 20px;
+    padding: 12px 25px;
+    background: linear-gradient(45deg,#4CAF50,#45a049);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  #actualizarBtn:hover { background: linear-gradient(45deg,#45a049,#3d8b3d); }
+
+  /* Tabla */
+  .tabla-responsive {
+    overflow-x: auto;
+    margin-top: 10px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    background: white;
+  }
+  body.dark-mode .tabla-responsive { background: #2c2c2c; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 10px; text-align: center; font-size: 0.95rem; border-bottom: 1px solid #e0e0e0; }
+  body.dark-mode th, body.dark-mode td { border-bottom: 1px solid #444; }
+  th { background-color: #1f3c88; color: white; cursor: pointer; }
+  body.dark-mode th { background-color: #3566aa; }
+  tr:nth-child(even) { background-color: #f7f9fb; }
+  tr:hover { background-color: #e8f0fe; }
+  body.dark-mode tr:nth-child(even) { background-color: #2a2a2a; }
+  body.dark-mode tr:hover { background-color: #3b3b3b; }
+
+  .loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #1f3c88;
+    border-radius: 50%;
+    width: 25px; height: 25px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* Metadatos */
+  .metadatos { margin-top: 30px; font-size: 0.9rem; color: #333; }
+  body.dark-mode .metadatos { color: #ccc; }
+
+  @media (max-width: 768px) {
+    nav { flex-direction: column; align-items: flex-start; }
+    nav a { margin: 5px 0; }
+    h1 { font-size: 1.5rem; }
+    th, td { font-size: 0.8rem; padding: 8px 5px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <a href="/">🏠 Inicio</a>
+    <a href="/pima">📊 Predicción</a>
+    <a href="/info">ℹ️ Información</a>
+  </div>
+  <button id="darkModeToggle">🌙 Modo Oscuro</button>
+</nav>
+
+<h1>Precios CENADA</h1>
+<input type="text" id="busqueda" placeholder="Buscar producto...">
+<button id="actualizarBtn">🔄 Actualizar datos</button>
+
+<div class="tabla-responsive">
+  <table id="tablaPrecios">
+    <thead>
+      <tr>
+        <th data-col="producto">Producto</th>
+        <th data-col="minimo">Mínimo</th>
+        <th data-col="maximo">Máximo</th>
+        <th data-col="moda">Moda</th>
+        <th data-col="promedio">Promedio</th>
+        <th data-col="unidad">Unidad</th>
+        <th data-col="mayorista">Mayorista</th>
+        <th data-col="fecha">Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="8"><div class="loader"></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="metadatos" class="metadatos"></div>
+
+<script>
+let datosGlobales = [];
+let sortConfig = { col: null, asc: true };
+
+function escapeHtml(text) {
+  return String(text || '').replace(/[&<>"']/g, (m) => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m]
+  ));
+}
+
+async function cargarDatos() {
+  const tbody = document.querySelector("#tablaPrecios tbody");
+  tbody.innerHTML = "<tr><td colspan='8'><div class='loader'></div></td></tr>";
+
+  try {
+    const res = await fetch("/api/precios");
+    const datos = await res.json();
+
+    if (!Array.isArray(datos) || datos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan='8'>⚠️ No hay datos disponibles</td></tr>`;
+      return;
+    }
+
+    datosGlobales = datos;
+    mostrarDatos(datos);
+    if (datos[0]) mostrarMetadatos(datos[0]);
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan='8'>⚠️ No se pudo cargar la información</td></tr>`;
+  }
+}
+
+function mostrarDatos(datos) {
+  const tbody = document.querySelector("#tablaPrecios tbody");
+  const productos = datos.slice(1);
+
+  if (!productos.length) {
+    tbody.innerHTML = "<tr><td colspan='8'>No hay datos disponibles</td></tr>";
+    return;
+  }
+
+  tbody.innerHTML = productos.map(item => `
+    <tr>
+      <td>${escapeHtml(item.producto)}</td>
+      <td>${escapeHtml(item.minimo)}</td>
+      <td>${escapeHtml(item.maximo)}</td>
+      <td>${escapeHtml(item.moda)}</td>
+      <td>${escapeHtml(item.promedio)}</td>
+      <td>${escapeHtml(item.unidad)}</td>
+      <td>${escapeHtml(item.mayorista)}</td>
+      <td>${escapeHtml(item.fecha)}</td>
+    </tr>
+  `).join("");
+}
+
+function mostrarMetadatos(meta) {
+  const cont = document.getElementById("metadatos");
+  cont.innerHTML = `
+    <strong>Última ejecución del scraper:</strong> ${escapeHtml(meta.ultima_ejecucion_scraper || 'N/A')}<br>
+    <strong>Última actualización en Git:</strong> ${escapeHtml(meta.ultima_actualizacion_git || 'N/A')}
+  `;
+}
+
+document.getElementById("busqueda").addEventListener("input", (e) => {
+  const valor = e.target.value.toLowerCase();
+  const filtrados = datosGlobales.slice(1).filter(item => item.producto.toLowerCase().includes(valor));
+  mostrarDatos([datosGlobales[0], ...filtrados]);
+});
+
+document.getElementById("actualizarBtn").addEventListener("click", cargarDatos);
+
+document.querySelectorAll("#tablaPrecios thead th").forEach(th => {
+  th.addEventListener("click", () => {
+    const col = th.dataset.col;
+    if (!col) return;
+    sortConfig.asc = (sortConfig.col === col) ? !sortConfig.asc : true;
+    sortConfig.col = col;
+
+    const productos = [...datosGlobales.slice(1)].sort((a, b) => {
+      const valA = a[col] || "";
+      const valB = b[col] || "";
+      if (!isNaN(valA) && !isNaN(valB)) return sortConfig.asc ? valA - valB : valB - valA;
+      return sortConfig.asc ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+    });
+
+    mostrarDatos([datosGlobales[0], ...productos]);
+  });
+});
+
+// Toggle modo oscuro
+document.getElementById("darkModeToggle").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+});
+
+cargarDatos();
+</script>
+
+</body>
+</html>

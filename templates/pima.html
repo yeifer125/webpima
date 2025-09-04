@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Predicción de precios</title>
+  <link rel="icon" href="https://i.postimg.cc/KcNyWSR4/orinoco.jpg" type="image/png">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      color: #121212;
+      transition: background 0.6s ease, color 0.6s ease;
+    }
+    body.dark-mode {
+      background: #121212;
+      color: #f0f0f0;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #1f3c88, #4b6cb7);
+      color: #fff;
+      padding: 15px 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    nav {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.3s;
+    }
+    nav a:hover { opacity: 0.8; }
+
+    /* Dark Mode Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "☀️";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+      font-size: 12px;
+      text-align: center;
+    }
+    input:checked + .slider {
+      background-color: #4caf50;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+      content: "🌙";
+    }
+
+    /* Contenedor principal */
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transition: background 0.6s ease, color 0.6s ease;
+    }
+    body.dark-mode .container {
+      background: #1e1e1e;
+      color: #f0f0f0;
+    }
+
+    #infoTexto {
+      background: rgba(0,0,0,0.05);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    body.dark-mode #infoTexto {
+      background: rgba(255,255,255,0.05);
+    }
+
+    #productoSelect {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 15px;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid #aaa;
+      background: #e0e0e0;
+    }
+    body.dark-mode #productoSelect {
+      background: #2c2c2c;
+      color: #fff;
+      border: 1px solid #444;
+    }
+
+    #grafica {
+      width: 100%;
+      height: 550px;
+      margin-top: 20px;
+    }
+
+    #mensaje {
+      text-align:center;
+      color:#ff6b6b;
+      font-weight:600;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      margin: 30px 0;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    body.dark-mode footer { color: #aaa; }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="/">🏠 Inicio</a>
+    <a href="/pima">📊 Predicción</a>
+    <a href="/info">ℹ️ Información</a>
+  </nav>
+  
+  <label class="switch">
+    <input type="checkbox" id="darkModeToggle">
+    <span class="slider"></span>
+  </label>
+</header>
+<h1>Predicción de precios (aproximado)</h1>
+<div class="container">
+  <div id="infoTexto">
+    Este software estima precios basados en datos históricos en línea.  
+    Los valores mostrados son aproximaciones y no consideran factores externos 
+    como clima, oferta completa o eventos extraordinarios.
+  </div>
+
+  <div id="mensaje"></div>
+  <select id="productoSelect"></select>
+  <div id="grafica"></div>
+</div>
+
+<footer>
+  Datos obtenidos desde <strong>PIMA</strong> | Desarrollado por Yeifer Guevara
+</footer>
+
+<script>
+const DATA_URL = "https://raw.githubusercontent.com/yeifer125/iadatos/main/historial.json";
+let datosGlobales = [];
+let productoActual = null;
+
+function parseFecha(fechaStr) {
+  const partes = fechaStr.split("/");
+  const dia = partes[0].padStart(2,'0');
+  const mes = partes[1].padStart(2,'0');
+  const anio = partes[2];
+  return `${anio}-${mes}-${dia}`;
+}
+
+async function cargarDatos() {
+  const mensaje = document.getElementById("mensaje");
+  try {
+    const res = await fetch(DATA_URL);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    datosGlobales = await res.json();
+
+    if(!datosGlobales.length){
+      mensaje.textContent = "⚠️ No hay datos disponibles.";
+      return;
+    }
+
+    mensaje.textContent = "";
+    const productos = Array.from(new Set(datosGlobales.map(p=>p.producto))).sort();
+    const select = document.getElementById("productoSelect");
+    select.innerHTML = "";
+    productos.forEach(p=>{
+      const option = document.createElement("option");
+      option.value = p;
+      option.textContent = p;
+      select.appendChild(option);
+    });
+
+    productoActual = productos[0];
+    mostrarGrafica(productoActual);
+
+  } catch(err){
+    console.error("Error cargando datos:",err);
+    mensaje.textContent = "❌ Error al cargar los datos. Intente recargar la página.";
+  }
+}
+
+function mostrarGrafica(producto){
+  productoActual = producto;
+  const datosProducto = datosGlobales.filter(p=>p.producto===producto);
+  if(!datosProducto.length) return;
+
+  datosProducto.sort((a,b)=> new Date(parseFecha(a.fecha)) - new Date(parseFecha(b.fecha)));
+
+  const fechas = datosProducto.map(p => parseFecha(p.fecha));
+  const moda = datosProducto.map(p=>Number(p.moda));
+
+  const xNumeric = moda.map((_,i)=>i);
+  const n = xNumeric.length;
+  const sumX = xNumeric.reduce((a,b)=>a+b,0);
+  const sumY = moda.reduce((a,b)=>a+b,0);
+  const sumXY = xNumeric.reduce((a,b,i)=>a+b*moda[i],0);
+  const sumXX = xNumeric.reduce((a,b)=>a+b*b,0);
+  const slope = (n*sumXY - sumX*sumY)/(n*sumXX - sumX*sumX);
+  const intercept = (sumY - slope*sumX)/n;
+  const yFit = xNumeric.map(x=>slope*x + intercept);
+  const residuals = moda.map((y,i)=>y - yFit[i]);
+  const sigma = Math.sqrt(residuals.reduce((a,b)=>a+b*b,0)/n);
+
+  const futureDays = 5;
+  const futureX = Array.from({length:futureDays},(_,i)=>n+i);
+  const futureY = futureX.map(x=>slope*x + intercept);
+  const futureFechas = futureX.map((_,i)=>{
+    const lastDate = new Date(fechas[fechas.length-1]);
+    lastDate.setDate(lastDate.getDate()+i+1);
+    return lastDate.toISOString().slice(0,10);
+  });
+
+  const dark = document.body.classList.contains("dark-mode");
+  const data = [
+    {x:fechas, y:moda, type:'scatter', mode:'lines+markers', name:'Histórico', line:{color:dark?'#4caf50':'green'}},
+    {x:fechas, y:yFit, type:'scatter', mode:'lines', name:'Tendencia', line:{dash:'dash', color:dark?'#ffab40':'red'}},
+    {x:futureFechas, y:futureY, type:'scatter', mode:'lines+markers', name:'Proyección', line:{dash:'dot', color:dark?'#40c4ff':'blue'}},
+    {x:[...futureFechas,...futureFechas.slice().reverse()], 
+     y:[...futureY.map(y=>y+sigma), ...futureY.map(y=>y-sigma)], 
+     fill:'toself', fillcolor: dark?'rgba(64,196,255,0.2)':'rgba(0,0,255,0.2)',
+     line:{color:'rgba(0,0,0,0)'},
+     name:'Rango estimado'}
+  ];
+
+  const layout = {
+    title:`Precio Moda - ${producto}`,
+    plot_bgcolor: dark?'#1e1e1e':'#f0f0f0',
+    paper_bgcolor: dark?'#1e1e1e':'#ffffff',
+    font:{color: dark?'#f0f0f0':'#121212'},
+    xaxis:{title:'Fecha', color: dark?'#f0f0f0':'#121212'},
+    yaxis:{title:'Precio (Moda)', color: dark?'#f0f0f0':'#121212'},
+    margin:{t:50,r:30,l:50,b:100}
+  };
+
+  Plotly.react('grafica', data, layout, {responsive:true});
+}
+
+document.getElementById("productoSelect").addEventListener("change",(e)=>{mostrarGrafica(e.target.value);});
+document.getElementById("darkModeToggle").addEventListener("change", ()=>{
+  document.body.classList.toggle("dark-mode");
+  if(productoActual) mostrarGrafica(productoActual);
+});
+
+cargarDatos();
+</script>
+</body>
+</html>

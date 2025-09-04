@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ℹ️ Información</title>
+<link rel="icon" href="https://i.postimg.cc/KcNyWSR4/orinoco.jpg" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0; padding: 0;
+    background: #f0f0f0;
+    color: #121212;
+    transition: background 0.6s ease, color 0.6s ease;
+}
+body.dark-mode {
+    background: #121212;
+    color: #f0f0f0;
+}
+
+/* Header y menú */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #1f3c88, #4b6cb7);
+    color: #fff;
+    padding: 15px 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+header nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    font-weight: 600;
+    color: #fff;
+    transition: color 0.3s;
+}
+header nav a:hover {
+    color: #ffd54f;
+}
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* Contenedor */
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 25px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    transition: background 0.6s ease, color 0.6s ease;
+}
+body.dark-mode .container {
+    background: #1e1e1e;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin: 40px 0 20px;
+    font-size: 0.9rem;
+    color: #555;
+}
+body.dark-mode footer { color: #aaa; }
+
+/* Toggle modo oscuro */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+.switch input {
+    opacity: 0; width: 0; height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top:0; left:0; right:0; bottom:0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 30px;
+}
+.slider:before {
+    position: absolute;
+    content: "☀️";
+    height: 24px; width: 24px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px;
+}
+input:checked + .slider { background-color: #4caf50; }
+input:checked + .slider:before {
+    transform: translateX(30px);
+    content:"🌙";
+}
+
+/* Estilo de secciones */
+h2 {
+    margin-top: 25px;
+    color: #1f3c88;
+}
+body.dark-mode h2 {
+    color: #4b8fe2;
+}
+p {
+    line-height: 1.6;
+}
+.icono {
+    font-size: 1.3rem;
+    margin-right: 6px;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="/">🏠 Inicio</a>
+        <a href="/pima">📊 Predicción</a>
+        <a href="/info">ℹ️ Información</a>
+    </nav>
+    <label class="switch">
+        <input type="checkbox" id="darkModeToggle">
+        <span class="slider"></span>
+    </label>
+</header>
+
+<div class="container">
+    <h1>ℹ️ Información de la Aplicación</h1>
+
+    <h2><span class="icono">📡</span> Origen de los datos</h2>
+    <p>
+        Esta aplicación obtiene los precios directamente del <strong>PIMA</strong> en línea, 
+        los organiza de forma clara y permite visualizar una predicción aproximada
+        de los próximos días usando datos históricos.
+    </p>
+
+    <h2><span class="icono">⚠️</span> Aviso</h2>
+    <p>
+        Las predicciones son estimaciones estadísticas,
+        no valores definitivos. Factores externos como clima, oferta o eventos
+        inesperados pueden afectar los precios reales.
+    </p>
+
+    <h2><span class="icono">📱</span> Uso en web y móvil</h2>
+    <p>
+        Esta versión está pensada para funcionar tanto en navegadores web 
+        como integrada dentro de aplicaciones móviles mediante WebView.
+    </p>
+
+    <h2><span class="icono">🛠️</span> Nota importante</h2>
+    <p>
+        Este proyecto fue <strong>desarrollado para uso propio</strong> porque la institución del PIMA 
+        aún no ha creado un sistema moderno y accesible.  
+        Actualmente utilizan un mecanismo <em>antiguo y poco práctico</em>, lo cual hace difícil su uso para personas 
+        con poco conocimiento técnico.  
+        Con esta aplicación, todo se encuentra <strong>a un clic</strong>, sin necesidad de descargas ni configuraciones adicionales, 
+        permitiendo consultar los precios del mercado nacional costarricense de manera rápida y sencilla.
+    </p>
+</div>
+
+<footer>
+    © 2025 - Proyecto Precios PIMA | Desarrollado por Yeifer Guevara
+</footer>
+
+<script>
+document.getElementById("darkModeToggle").addEventListener("change", () => {
+    document.body.classList.toggle("dark-mode");
+});
+</script>
+
+</body>
+</html>
