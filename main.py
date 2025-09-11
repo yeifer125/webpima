@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-API_PIMA = os.environ.get("API_PIMA_URL", "https://apiparagit.onrender.com/precios")
+API_PIMA = os.environ.get("API_PIMA_URL", "https://apiparagit-3yxs.onrender.com/precios")
 
 # Middleware para mostrar la IP en logs
 @app.before_request
