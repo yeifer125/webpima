@@ -3,7 +3,7 @@ FROM python:3.10-slim
 
 # ---------- Variables de entorno ----------
 ENV PYTHONUNBUFFERED=1 \
-    API_PIMA_URL=https://apiparagit-3yxs.onrender.com/precios
+    API_PIMA_URL=https://apiparagit-g6p4.onrender.com/precios
 
 # ---------- Directorio de trabajo ----------
 WORKDIR /app
