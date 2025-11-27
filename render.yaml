@@ -9,6 +9,6 @@ services:
     healthCheckPath: /      # Render comprobará la raíz "/"
     envVars:
       - key: API_PIMA_URL
-        value: "https://apiparagit-g6p4.onrender.com/precios"
+        value: "https://apiparagit.onrender.com/precios"
       - key: PYTHONUNBUFFERED
         value: "1"
